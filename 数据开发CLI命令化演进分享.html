@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIP CLI 系统介绍与技术分享 shadcn/ui 版</title>
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --radius: 0.75rem;
+      --chart-1: 221.2 83.2% 53.3%;
+      --chart-2: 173 58% 39%;
+      --chart-3: 43 74% 66%;
+      --chart-4: 262.1 83.3% 57.8%;
+      --chart-5: 142.1 76.2% 36.3%;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: hsl(var(--foreground));
+      background:
+        radial-gradient(circle at top left, hsl(var(--muted)) 0, transparent 320px),
+        hsl(var(--background));
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex: 0 0 auto;
+    }
+
+    code,
+    pre,
+    .mono {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      width: min(1620px, 100%);
+      margin: 0 auto;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 1rem;
+      align-self: start;
+      max-height: calc(100dvh - 2rem);
+      overflow: auto;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--card) / 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .brand-icon,
+    .icon {
+      display: inline-grid;
+      place-items: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: calc(var(--radius) - 2px);
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .brand-title {
+      display: grid;
+      gap: 0.05rem;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+
+    .brand-title span:last-child {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.75rem;
+      font-weight: 550;
+    }
+
+    .nav {
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.25rem;
+      border-radius: calc(var(--radius) - 4px);
+      padding: 0.45rem 0.65rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .nav a:hover,
+    .nav a:focus-visible {
+      color: hsl(var(--accent-foreground));
+      background: hsl(var(--accent));
+      outline: none;
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.16);
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--background) / 0.82);
+      backdrop-filter: blur(12px);
+      padding: 0 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      height: 1.5rem;
+      border-radius: 0.375rem;
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--muted));
+      padding: 0 0.45rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.75rem;
+      font-weight: 650;
+      box-shadow: inset 0 -1px 0 hsl(var(--border));
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 2.5rem;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--border));
+      padding: 0.55rem 0.85rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px hsl(var(--ring) / 0.12);
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      border-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      background: hsl(var(--primary));
+    }
+
+    .button.ghost {
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, hsl(var(--background)) 0, hsl(var(--muted)) 100%);
+      padding: clamp(1.25rem, 4vw, 3.5rem);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -18rem -18rem auto;
+      width: 34rem;
+      height: 34rem;
+      border-radius: 999px;
+      background: radial-gradient(circle, hsl(var(--chart-1) / 0.14), transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.88fr);
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: 999px;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      padding: 0.25rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .badge.secondary {
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+    }
+
+    .badge.blue {
+      color: hsl(var(--chart-1));
+      background: hsl(var(--chart-1) / 0.08);
+      border-color: hsl(var(--chart-1) / 0.18);
+    }
+
+    .badge.green {
+      color: hsl(var(--chart-5));
+      background: hsl(var(--chart-5) / 0.08);
+      border-color: hsl(var(--chart-5) / 0.18);
+    }
+
+    .badge.amber {
+      color: #9a6700;
+      background: hsl(var(--chart-3) / 0.16);
+      border-color: hsl(var(--chart-3) / 0.28);
+    }
+
+    .badge.violet {
+      color: hsl(var(--chart-4));
+      background: hsl(var(--chart-4) / 0.1);
+      border-color: hsl(var(--chart-4) / 0.2);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.18;
+    }
+
+    h1 {
+      margin-top: 1rem;
+      max-width: 12ch;
+      font-size: clamp(2.4rem, 5vw, 5.2rem);
+      font-weight: 850;
+    }
+
+    .lead {
+      margin: 1rem 0 0;
+      max-width: 64ch;
+      color: hsl(var(--muted-foreground));
+      font-size: clamp(1rem, 1.4vw, 1.2rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 1rem;
+    }
+
+    .command-card {
+      overflow: hidden;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--popover));
+      box-shadow: 0 18px 50px hsl(var(--foreground) / 0.08);
+    }
+
+    .command-search {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      height: 3.25rem;
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 0 1rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .command-list {
+      padding: 0.5rem;
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .command-item {
+      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      border-radius: calc(var(--radius) - 4px);
+      padding: 0.75rem;
+    }
+
+    .command-item.active {
+      background: hsl(var(--accent));
+    }
+
+    .command-item strong {
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .command-item span {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.75rem;
+    }
+
+    .section {
+      margin-top: 1rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--card));
+      padding: clamp(1rem, 2.2vw, 2rem);
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.25rem;
+    }
+
+    .kicker {
+      margin-bottom: 0.5rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      color: hsl(var(--foreground));
+      font-size: clamp(1.75rem, 3vw, 2.75rem);
+      font-weight: 820;
+    }
+
+    .section-desc {
+      margin: 0.625rem 0 0;
+      max-width: 80ch;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--card));
+      padding: 1rem;
+      box-shadow: 0 1px 2px hsl(var(--foreground) / 0.04);
+    }
+
+    .card.muted {
+      background: hsl(var(--muted) / 0.52);
+    }
+
+    .card h3 {
+      margin-top: 0.875rem;
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    .card p,
+    .card li {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.93rem;
+    }
+
+    .card p {
+      margin: 0.45rem 0 0;
+    }
+
+    .icon.blue { color: hsl(var(--chart-1)); background: hsl(var(--chart-1) / 0.1); }
+    .icon.teal { color: hsl(var(--chart-2)); background: hsl(var(--chart-2) / 0.1); }
+    .icon.amber { color: #9a6700; background: hsl(var(--chart-3) / 0.18); }
+    .icon.violet { color: hsl(var(--chart-4)); background: hsl(var(--chart-4) / 0.1); }
+    .icon.green { color: hsl(var(--chart-5)); background: hsl(var(--chart-5) / 0.1); }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: hsl(var(--background));
+    }
+
+    .metric span {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 1.65rem;
+      line-height: 1;
+    }
+
+    .tabs {
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: hsl(var(--background));
+    }
+
+    .tabs-list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.25rem;
+      background: hsl(var(--muted));
+      padding: 0.25rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .tab-trigger {
+      cursor: pointer;
+      min-height: 2.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: calc(var(--radius) - 4px);
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      font-weight: 750;
+    }
+
+    .tab-trigger.active {
+      color: hsl(var(--foreground));
+      background: hsl(var(--background));
+      box-shadow: 0 1px 2px hsl(var(--foreground) / 0.08);
+    }
+
+    .tabs-content {
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .code-panel {
+      overflow: hidden;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: #09090b;
+      color: #fafafa;
+    }
+
+    .code-panel header {
+      height: 2.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0 1rem;
+      color: #a1a1aa;
+      font-size: 0.8rem;
+      font-weight: 750;
+    }
+
+    .code-panel pre {
+      margin: 0;
+      padding: 1rem;
+      overflow: auto;
+      color: #e4e4e7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.86rem;
+      line-height: 1.7;
+    }
+
+    .token-comment { color: #a1a1aa; }
+    .token-ok { color: #86efac; }
+    .token-cmd { color: #93c5fd; }
+    .token-warn { color: #fde68a; }
+
+    .architecture {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .arch-layer {
+      display: grid;
+      grid-template-columns: 11rem minmax(0, 1fr);
+      gap: 0.75rem;
+      align-items: stretch;
+    }
+
+    .arch-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      padding: 0.75rem;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .arch-cells {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .arch-cell {
+      min-height: 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--background));
+      padding: 0.875rem;
+    }
+
+    .arch-cell strong {
+      font-size: 0.9rem;
+    }
+
+    .arch-cell span {
+      margin-top: 0.2rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.78rem;
+    }
+
+    .separator {
+      height: 1px;
+      background: hsl(var(--border));
+      margin: 0.2rem 0;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+      gap: 0.75rem;
+      align-items: start;
+    }
+
+    .timeline-index {
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 999px;
+      color: hsl(var(--primary-foreground));
+      background: hsl(var(--primary));
+      font-weight: 850;
+    }
+
+    .timeline-body {
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--background));
+      padding: 0.875rem 1rem;
+    }
+
+    .timeline-body strong {
+      display: block;
+      font-weight: 800;
+    }
+
+    .timeline-body span {
+      display: block;
+      margin-top: 0.25rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.9rem;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .step-card {
+      position: relative;
+      min-height: 8.25rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--background));
+      padding: 1rem;
+    }
+
+    .step-card b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 999px;
+      color: hsl(var(--primary-foreground));
+      background: hsl(var(--primary));
+      font-size: 0.75rem;
+    }
+
+    .step-card strong {
+      display: block;
+      margin-top: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .step-card span {
+      display: block;
+      margin-top: 0.35rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.82rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      background: hsl(var(--background));
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 0.875rem 1rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: hsl(var(--muted-foreground));
+      background: hsl(var(--muted) / 0.72);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.9rem;
+    }
+
+    td:first-child {
+      color: hsl(var(--foreground));
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: 2.25rem minmax(0, 1fr);
+      gap: 0.75rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--muted) / 0.48);
+      padding: 1rem;
+    }
+
+    .callout strong {
+      display: block;
+      font-weight: 800;
+    }
+
+    .callout p {
+      margin: 0.25rem 0 0;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.92rem;
+    }
+
+    .quarter-plan {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .quarter-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      min-height: 100%;
+    }
+
+    .quarter-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .quarter-head strong {
+      font-size: 1.35rem;
+      font-weight: 850;
+    }
+
+    .quarter-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .footer {
+      padding: 1.5rem 0.5rem 0.5rem;
+      color: hsl(var(--muted-foreground));
+      text-align: center;
+      font-size: 0.875rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hero-grid,
+      .tabs-content {
+        grid-template-columns: 1fr;
+      }
+
+      .grid.four,
+      .metric-grid,
+      .quarter-plan,
+      .workflow,
+      .arch-cells {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .arch-layer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 0.5rem;
+      }
+
+      .topbar {
+        height: auto;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 0.875rem;
+      }
+
+      .nav,
+      .grid.two,
+      .grid.three,
+      .grid.four,
+      .metric-grid,
+      .quarter-plan,
+      .workflow,
+      .arch-cells,
+      .tabs-list {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: 11ch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar" aria-label="页面目录">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg>
+        </span>
+        <div class="brand-title">
+          <span>DIP CLI</span>
+          <span>面向Agent的CLI作业开发&编排</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#training"><svg viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-1.5z"/><path d="M8 7h6"/><path d="M8 11h6"/></svg>分享节奏</a>
+        <a href="#overview"><svg viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>背景定位</a>
+        <a href="#value"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg>提升价值</a>
+        <a href="#architecture"><svg viewBox="0 0 24 24"><path d="M12 3v6"/><path d="M6 15v6"/><path d="M18 15v6"/><path d="M12 9l-6 6"/><path d="M12 9l6 6"/></svg>系统架构</a>
+        <a href="#modules"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>核心模块</a>
+        <a href="#develop"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>开发实现</a>
+        <a href="#workflow"><svg viewBox="0 0 24 24"><path d="M4 6h6v6H4z"/><path d="M14 12h6v6h-6z"/><path d="M10 9h2a2 2 0 0 1 2 2v4"/></svg>使用流程</a>
+        <a href="#commands"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>命令速查</a>
+        <a href="#practice"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>最佳实践</a>
+        <a href="#roadmap"><svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>后续规划</a>
+        <a href="#timeline"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>时间规划</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span>Docs</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          <span>DIP CLI</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          <strong>系统分享</strong>
+        </div>
+        <div class="top-actions">
+          <span class="kbd">Go + Cobra</span>
+          <span class="kbd">API Client</span>
+          <span class="kbd">JSON Output</span>
+        </div>
+      </div>
+
+      <header class="hero">
+        <div class="hero-grid">
+          <div>
+            <h2>DIP CLI命令化演进分享</h2>
+            <p class="lead">
+              用清晰的组件层级展示 DIP CLI 的系统架构、开发实现、使用链路和团队落地方式。
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#architecture">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18"/><path d="M13 5l7 7-7 7"/></svg>
+                查看架构
+              </a>
+              <a class="button ghost" href="#commands">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>
+                命令速查
+              </a>
+            </div>
+            <div class="metric-grid" aria-label="核心摘要">
+              <div class="metric"><span>定位</span><strong>CLI</strong></div>
+              <div class="metric"><span>架构</span><strong>5 层</strong></div>
+              <div class="metric"><span>输出</span><strong>3 类</strong></div>
+              <div class="metric"><span>流程</span><strong>8 步</strong></div>
+            </div>
+          </div>
+
+          <div class="command-card" aria-label="命令面板示例">
+            <div class="command-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              Search commands...
+              <span class="kbd" style="margin-left:auto">⌘K</span>
+            </div>
+            <div class="command-list">
+              <div class="command-item active">
+                <span class="icon blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 11v4"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></span>
+                <div><strong>dip login</strong><span>登录 DIP 平台并建立本地身份上下文</span></div>
+                <span class="badge secondary">auth</span>
+              </div>
+              <div class="command-item">
+                <span class="icon teal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v6H4z"/><path d="M4 14h16v6H4z"/></svg></span>
+                <div><strong>dip config use qatest</strong><span>切换团队共享空间配置</span></div>
+                <span class="badge secondary">config</span>
+              </div>
+              <div class="command-item">
+                <span class="icon violet" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></span>
+                <div><strong>dip task start-debug --code</strong><span>提交草稿作业调试并返回 debug-id</span></div>
+                <span class="badge secondary">task</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <section class="section" id="training">
+        <div class="section-header">
+          <div>
+            <div class="kicker">01 Training</div>
+            <h2>整体节奏：30-45 分钟分享内容</h2>
+            <p class="section-desc">先讲价值，再讲架构，再跑命令，最后给出团队落地规范。</p>
+          </div>
+          <span class="badge blue">Agenda</span>
+        </div>
+        <div class="workflow">
+          <div class="step-card"><b>1</b><strong>背景痛点</strong></div>
+          <div class="step-card"><b>2</b><strong>架构定位</strong></div>
+          <div class="step-card"><b>3</b><strong>开发实现</strong></div>
+          <div class="step-card"><b>4</b><strong>使用演示</strong></div>
+          <div class="step-card"><b>5</b><strong>实践落地</strong></div>
+          <div class="step-card"><b>6</b><strong>答疑扩展</strong></div>
+          <div class="step-card"><b>7</b><strong>命令模板</strong></div>
+          <div class="step-card"><b>8</b><strong>后续计划</strong></div>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="section-header">
+          <div>
+            <div class="kicker">02 Overview</div>
+            <h2>背景定位：把平台能力变成可编排命令</h2>
+            <p class="section-desc">
+              大数据作业开发的标准流程包括登录平台、查询资源、创建作业、保存草稿、草稿调试、发布等流程。DIP CLI 的核心价值是把这些高频操作抽象成稳定命令，降低重复成本，并为脚本、Agent 和 CI 提供入口。
+            </p>
+          </div>
+          <span class="badge amber">Training Focus</span>
+        </div>
+        <div class="grid four">
+          <article class="card muted">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M7 8h10"/><path d="M7 12h6"/></svg></span>
+            <h3>减少页面跳转</h3>
+            <p>把业务组、目录、资源组、任务详情等查询动作收敛到终端。</p>
+          </article>
+          <article class="card muted">
+            <span class="icon teal"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <h3>降低误操作</h3>
+            <p>通过参数校验、输出协议等减少非法数据入库风险。</p>
+          </article>
+          <article class="card muted">
+            <span class="icon violet"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h16"/></svg></span>
+            <h3>沉淀团队经验</h3>
+            <p>项目级配置和命令模板可以进入仓库，快速复用标准流程。</p>
+          </article>
+          <article class="card muted">
+            <span class="icon green"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 10l7-7 7 7"/><path d="M5 14l7 7 7-7"/></svg></span>
+            <h3>连接自动化</h3>
+            <p>结构化输出能被脚本、 Agent 消费，推动开发流程自动化。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="value">
+        <div class="section-header">
+          <div>
+            <div class="kicker">03 Value</div>
+            <h2>提升价值：效率、准确性和自动化能力</h2>
+            <p class="section-desc">
+              工具功能列表 & CLI 带来开发方式变化。
+            </p>
+          </div>
+          <span class="badge green">User Benefit</span>
+        </div>
+        <div class="grid three">
+          <article class="card">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg></span>
+            <h3>开发效率提升</h3>
+            <p>高频动作可复制、可别名化、可脚本化，减少重复点击和参数查找。</p>
+          </article>
+          <article class="card">
+            <span class="icon teal"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <h3>交付准确性提升</h3>
+            <p>统一读取环境、空间、资源默认值，配合错误分类和 exit code 做前置校验。</p>
+          </article>
+          <article class="card">
+            <span class="icon violet"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M2 12a10 10 0 1 1 20 0c0 3-2 5-4 6H6c-2-1-4-3-4-6z"/></svg></span>
+            <h3>自动化能力提升</h3>
+            <p><span class="mono">-o json</span> 和 <span class="mono">--fields</span> 将结果变成机器可读数据，方便 Agent 和 CI 编排。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="architecture">
+        <div class="section-header">
+          <div>
+            <div class="kicker">04 Architecture</div>
+            <h2>系统架构：本地轻量客户端，平台承载业务状态</h2>
+            <p class="section-desc">
+              DIP CLI 不替代数据中台，而是平台能力的本地命令入口。它向上承接开发用户、脚本和 Agent，向下调用 DIP 开发平台、开发中心、配置管理、权限、运维等服务API。
+            </p>
+          </div>
+          <span class="badge blue">Client / API / Platform</span>
+        </div>
+        <div class="architecture">
+          <div class="arch-layer">
+            <div class="arch-title">用户层</div>
+            <div class="arch-cells">
+              <div class="arch-cell"><strong>大数据开发</strong><span>日常任务开发</span></div>
+              <div class="arch-cell"><strong>脚本工具</strong><span>批量执行和查询</span></div>
+              <div class="arch-cell"><strong>Agent</strong><span>读取 JSON 输出</span></div>
+              <div class="arch-cell"><strong>CI 流水线</strong><span>自动检查和发布</span></div>
+            </div>
+          </div>
+          <div class="separator"></div>
+          <div class="arch-layer">
+            <div class="arch-title">CLI 入口层</div>
+            <div class="arch-cells">
+              <div class="arch-cell"><strong>main.go</strong><span>版本、别名、入口</span></div>
+              <div class="arch-cell"><strong>Cobra Root</strong><span>命令注册与路由</span></div>
+              <div class="arch-cell"><strong>Flags</strong><span>参数解析与校验</span></div>
+              <div class="arch-cell"><strong>Help</strong><span>帮助信息渲染</span></div>
+            </div>
+          </div>
+          <div class="separator"></div>
+          <div class="arch-layer">
+            <div class="arch-title">业务命令层</div>
+            <div class="arch-cells">
+              <div class="arch-cell"><strong>login / auth</strong><span>登录态与 Token</span></div>
+              <div class="arch-cell"><strong>config / env</strong><span>环境与空间配置</span></div>
+              <div class="arch-cell"><strong>task</strong><span>创建、调试、发布</span></div>
+              <div class="arch-cell"><strong>resource</strong><span>目录、资源组、业务组、集群</span></div>
+            </div>
+          </div>
+          <div class="separator"></div>
+          <div class="arch-layer">
+            <div class="arch-title">服务封装层</div>
+            <div class="arch-cells">
+              <div class="arch-cell"><strong>API Client</strong><span>统一 HTTP 调用</span></div>
+              <div class="arch-cell"><strong>Auth</strong><span>凭证读取与刷新</span></div>
+              <div class="arch-cell"><strong>Output</strong><span>table / json / yaml</span></div>
+              <div class="arch-cell"><strong>Error</strong><span>错误分类与ExitCode</span></div>
+            </div>
+          </div>
+          <div class="separator"></div>
+          <div class="arch-layer">
+            <div class="arch-title">平台能力层</div>
+            <div class="arch-cells">
+              <div class="arch-cell"><strong>DIP 开放 API</strong><span>平台资源查询</span></div>
+              <div class="arch-cell"><strong>开发中心 API</strong><span>目录、任务调试发布</span></div>
+              <div class="arch-cell"><strong>资源服务</strong><span>业务组、资源组</span></div>
+              <div class="arch-cell"><strong>通用服务</strong><span>集群、告警规则</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="modules">
+        <div class="section-header">
+          <div>
+            <div class="kicker">05 Modules</div>
+            <h2>核心模块：以大数据开发链路为中心</h2>
+            <p class="section-desc">模块介绍建议围绕“用户要完成什么动作”展开，再补充背后的命令和代码边界。</p>
+          </div>
+          <span class="badge secondary">Module Map</span>
+        </div>
+        <div class="grid four">
+          <article class="card">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M12 11v4"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></span>
+            <h3>认证与环境</h3>
+            <p>负责登录、登出、登录态检查、环境列表和环境切换。</p>
+          </article>
+          <article class="card">
+            <span class="icon teal"><svg viewBox="0 0 24 24"><path d="M4 4h16v6H4z"/><path d="M4 14h16v6H4z"/></svg></span>
+            <h3>项目配置</h3>
+            <p>维护团队共享的空间、业务组、目录和资源组默认值。</p>
+          </article>
+          <article class="card">
+            <span class="icon violet"><svg viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></span>
+            <h3>作业管理</h3>
+            <p>覆盖创建、查询、调试、停止调试、状态查询和发布。</p>
+          </article>
+          <article class="card">
+            <span class="icon amber"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7"/><path d="M9 7V5h6v2"/></svg></span>
+            <h3>实时作业源</h3>
+            <p>查询集群、Topic、鉴权账号和消费组，辅助实时作业。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="develop">
+        <div class="section-header">
+          <div>
+            <div class="kicker">06 Development</div>
+            <h2>开发实现：命令、配置、接口、输出四条线</h2>
+            <p class="section-desc">技术分享不需要逐文件讲解，更适合按调用链路讲清职责边界。</p>
+          </div>
+          <span class="badge blue">Go + Cobra</span>
+        </div>
+        <div class="tabs">
+          <div class="tabs-list" role="tablist" aria-label="开发实现主题">
+            <div class="tab-trigger active" role="tab" tabindex="0" aria-selected="true" data-tab="command">命令层</div>
+            <div class="tab-trigger" role="tab" tabindex="0" aria-selected="false" data-tab="config">配置层</div>
+            <div class="tab-trigger" role="tab" tabindex="0" aria-selected="false" data-tab="client">Client 层</div>
+            <div class="tab-trigger" role="tab" tabindex="0" aria-selected="false" data-tab="output">输出层</div>
+          </div>
+          <div class="tabs-content" id="develop-tab-content">
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-index">1</div>
+                <div class="timeline-body"><strong>Cobra 解析命令</strong><span>识别 task / config / kafka 等子命令，并完成 flags 校验。</span></div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-index">2</div>
+                <div class="timeline-body"><strong>配置合并上下文</strong><span>读取环境、active space、项目级默认值和用户级登录态。</span></div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-index">3</div>
+                <div class="timeline-body"><strong>Client 调用平台 API</strong><span>命令层不直接耦合接口路径，统一经过 API Client。</span></div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-index">4</div>
+                <div class="timeline-body"><strong>输出协议稳定呈现</strong><span>面向人输出 table，面向机器输出 json/yaml，错误走 stderr。</span></div>
+              </div>
+            </div>
+            <div class="code-panel">
+              <header>
+                <span>task start-debug 调用链</span>
+                <span class="kbd">example</span>
+              </header>
+<pre><code><span class="token-cmd">$ dip task start-debug --code 1278123600326688</span>
+
+<span class="token-comment"># 1. Cobra 解析命令和参数</span>
+validate(code, biztime, spaceCode)
+
+<span class="token-comment"># 2. 读取配置与登录态</span>
+ctx = loadActiveEnvAndSpace()
+auth = ensureToken()
+
+<span class="token-comment"># 3. 调用开发中心 API</span>
+POST /tasks/{code}/debug/submit
+
+<span class="token-comment"># 4. 输出下一步动作</span>
+<span class="token-ok">调试作业已提交</span>
+debug-status / stop-debug / publish</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="workflow">
+        <div class="section-header">
+          <div>
+            <div class="kicker">07 Workflow</div>
+            <h2>典型使用流程：从登录到发布的一条链路</h2>
+          </div>
+          <span class="badge green">End-to-end</span>
+        </div>
+        <div class="workflow">
+          <div class="step-card"><b>1</b><strong>登录平台</strong><span>dip login / dip auth status</span></div>
+          <div class="step-card"><b>2</b><strong>切换空间</strong><span>dip config use qatest</span></div>
+          <div class="step-card"><b>3</b><strong>查询资源</strong><span>project / folder-tree / resource-group</span></div>
+          <div class="step-card"><b>4</b><strong>创建作业</strong><span>task create integration-batch</span></div>
+          <div class="step-card"><b>5</b><strong>提交调试</strong><span>task start-debug --code</span></div>
+          <div class="step-card"><b>6</b><strong>查看状态</strong><span>task debug-status --debug-id</span></div>
+          <div class="step-card"><b>7</b><strong>发布作业</strong><span>task publish --code</span></div>
+          <div class="step-card"><b>8</b><strong>脚本沉淀</strong><span>-o json / --fields</span></div>
+        </div>
+      </section>
+
+      <section class="section" id="commands">
+        <div class="section-header">
+          <div>
+            <div class="kicker">08 Commands</div>
+            <h2>命令速查：按用户场景分类</h2>
+            <p class="section-desc">这张表适合结尾给用户作为日常工作速查。</p>
+          </div>
+          <span class="badge secondary">Reference</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="8%">场景</th>
+                <th>命令</th>
+                <th width="31%">用途</th>
+                <th width="25%">分享目标</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>登录认证</td>
+                <td class="mono">dip login<br />dip auth status<br />dip logout</td>
+                <td>建立、查看和清理本地登录态。</td>
+                <td>先确认身份和环境，再做任务操作。</td>
+              </tr>
+              <tr>
+                <td>环境配置</td>
+                <td class="mono">dip env list<br />dip env use test<br />dip config current</td>
+                <td>查看环境、切换环境、确认当前空间配置。</td>
+                <td>避免测试/生产环境混用。</td>
+              </tr>
+              <tr>
+                <td>资源查询</td>
+                <td class="mono">dip project list<br />dip folder-tree list --flat<br />dip resource-group list --scene offline</td>
+                <td>查询创建作业的业务组、目录树和资源组。</td>
+                <td>把“找参数”变成可重复命令。</td>
+              </tr>
+              <tr>
+                <td>作业开发</td>
+                <td class="mono">dip task create integration-batch<br />dip task get --code &lt;code&gt;<br />dip task publish --code &lt;code&gt;</td>
+                <td>创建作业、查询详情、发布作业。</td>
+                <td>围绕作业生命周期演示。</td>
+              </tr>
+              <tr>
+                <td>草稿调试</td>
+                <td class="mono">dip task start-debug --code &lt;code&gt;<br />dip task debug-status --debug-id &lt;id&gt;<br />dip task stop-debug --debug-id &lt;id&gt;</td>
+                <td>提交调试、轮询状态、停止运行中的调试任务。</td>
+                <td>强调 debug-id 的承接和非终态任务处理。</td>
+              </tr>
+              <tr>
+                <td>别名机制</td>
+                <td class="mono"> dip alias list <br /> dip alias set pl "project list" <br /> dip alias remove pl</td>
+                <td>设置常用CLI命令的缩写指令， 方便记忆，提升开发效率。</td>
+                <td>根据个人、团队规范设置常用别名，减少沟通成本。</td>
+              </tr>
+              <tr>
+                <td>机器输出</td>
+                <td class="mono">dip task get --code &lt;code&gt; -o json --fields basicInfo.name,basicInfo.code</td>
+                <td>输出结构化结果，供脚本、Agent、CI 使用。</td>
+                <td>这是自动化和智能体集成的关键。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="practice">
+        <div class="section-header">
+          <div>
+            <div class="kicker">09 Practices</div>
+            <h2>最佳实践：把个人习惯沉淀为团队资产</h2>
+            <p class="section-desc">落地建议要具体到仓库、脚本、README 和调试规范。</p>
+          </div>
+          <span class="badge amber">Team Standard</span>
+        </div>
+        <div class="grid two">
+          <div class="callout">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/></svg></span>
+            <div><strong>维护项目级 config.yaml</strong><p>把团队共享的空间、业务组、目录、资源组配置放进项目仓库，减少口口相传。</p></div>
+          </div>
+          <div class="callout">
+            <span class="icon teal"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+            <div><strong>沉淀命令模板</strong><p>在 README 中写清创建、调试、状态查询和发布命令，让新人直接复用。</p></div>
+          </div>
+          <div class="callout">
+            <span class="icon violet"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/></svg></span>
+            <div><strong>查询类命令优先 JSON</strong><p>脚本和 Agent 场景使用 <span class="mono">-o json</span> 和 <span class="mono">--fields</span>，避免解析 table 文本。</p></div>
+          </div>
+          <div class="callout">
+            <span class="icon amber"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+            <div><strong>发布前先调试验证</strong><p>建议团队统一“创建草稿 → 提交调试 → 查询状态 → 发布”的流程，降低误发布。</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="roadmap">
+        <div class="section-header">
+          <div>
+            <div class="kicker">10 Roadmap</div>
+            <h2>后续规划：从 CLI 工具到自动化底座</h2>
+            <p class="section-desc">DIP CLI 的演进方向是继续扩展任务类型、增强诊断能力、支持元数据表导入、自动创建 Hive/Paimon/StarRocks 表，并深化 Agent/CI 集成。</p>
+          </div>
+          <span class="badge green">Next</span>
+        </div>
+        <div class="grid four">
+          <article class="card">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M19.07 4.93L4.93 19.07"/></svg></span>
+            <h3>扩展任务类型</h3>
+            <p>实时：FlinkSQL、PyFlink、 实时集成(kafka -> hive、tidb、starrocks..)</br> 离线：SparkSQL、PySpark、算子处理</p>
+          </article>
+          <article class="card">
+            <span class="icon teal"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg></span>
+            <h3>增强调试诊断</h3>
+            <p>围绕作业调试、周期运行等场景运行日志分析失败原因输出诊断建议。</p>
+          </article>
+           <article class="card">
+            <span class="icon green"><svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/></svg></span>
+            <h3>完善作业运维</h3>
+            <p>集成运维中心相关能力，完善作业上下线、资源配置修改， 离线作业补数、实时作业运维等。</p>
+          </article>
+          <article class="card">
+            <span class="icon amber"><svg viewBox="0 0 24 24"><path d="M4 4h16v6H4z"/><path d="M4 14h16v6H4z"/><path d="M8 7h.01"/><path d="M8 17h.01"/></svg></span>
+            <h3>元数据表导入</h3>
+            <p>支持从业务表结构导入、Hive/SR/Paimon表创建，减少手工配置。</p>
+          </article>
+          <article class="card">
+            <span class="icon blue"><svg viewBox="0 0 24 24"><path d="M12 3l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/></svg></span>
+            <h3>自动创建湖仓表</h3>
+            <p>基于导入元数据自动生成 Hive、Paimon、StarRocks 建表动作和校验结果。</p>
+          </article>
+          <article class="card">
+            <span class="icon violet"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
+            <h3>支持批量操作</h3>
+            <p>支持多任务、多表、多Topic 的批量查询和校验。</p>
+          </article>
+            <article class="card">
+            <span class="icon emerald"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M19.07 4.93L4.93 19.07"/></svg></span>
+            <h3>智能化配置</h3>
+            <p>根据作业依赖、空间资源使用分布自动添加依赖、配置资源队列及调度周期。</p>
+          </article>
+          <article class="card">
+            <span class="icon green"><svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/></svg></span>
+            <h3>深化 Agent 集成</h3>
+            <p>用稳定输出和命令模板支撑智能体安全执行平台操作。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="timeline">
+        <div class="section-header">
+          <div>
+            <div class="kicker">11 Timeline</div>
+            <h2>时间规划：按季度推进能力建设</h2>
+            <p class="section-desc">围绕诊断、建表、任务类型扩展、作业运维和 Agent 集成逐季推进，先补齐高频手工操作，再沉淀自动化能力。</p>
+          </div>
+          <span class="badge amber">Q2 - Q4</span>
+        </div>
+        <div class="quarter-plan">
+          <article class="card quarter-card">
+            <div class="quarter-head">
+              <strong>Q2</strong>
+              <span class="badge blue">诊断与建表</span>
+            </div>
+            <ul class="quarter-list">
+              <li>创建 Hive 表</li>
+              <li>创建 StarRocks表（明细模型、主键模型、更新模型、 分桶等能力）</li>
+              <li>支持 SparkSQL、PySpark作业开发</li>
+              <li>开发调试的日志诊断</li>
+            </ul>
+          </article>
+          <article class="card quarter-card">
+            <div class="quarter-head">
+              <strong>Q3</strong>
+              <span class="badge green">建表与运维</span>
+            </div>
+            <ul class="quarter-list">
+              <li>创建 Paimon 表</li>
+              <li>支持MySQL、TiDB、OB 业务库导入</li>
+              <li>支持 FlinkSQL、PyFlink 作业</li>
+              <li>实时集成：Kafka 到 Hive、TiDB、StarRocks</li>
+              <li>作业上下线、资源配置修改</li>
+              <li>实时作业运维(启动、停止、状态查询等)</li>
+            </ul>
+          </article>
+          <article class="card quarter-card">
+            <div class="quarter-head">
+              <strong>Q4</strong>
+              <span class="badge violet">自动化与 Agent</span>
+            </div>
+            <ul class="quarter-list">
+              <li>基于血缘自动解析周期作业依赖</li>
+              <li>基于上游依赖推断调度时间</li>
+              <li>支持数据集成Agent相关能力建设</li>
+              <li>支持数据IAMAPAgent相关能力建设</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer">
+        DIP CLI 系统介绍与技术分享 · 数智平台 · 作业开发与测试
+      </footer>
+    </main>
+  </div>
+  <script>
+    const developTabs = {
+      command: {
+        steps: [
+          ['Cobra 解析命令', '识别 task / config / kafka 等子命令，并完成 flags 校验。'],
+          ['配置合并上下文', '读取环境、active space、项目级默认值和用户级登录态。'],
+          ['Client 调用平台 API', '命令层不直接耦合接口路径，统一经过 API Client。'],
+          ['输出协议稳定呈现', '面向人输出 table，面向机器输出 json/yaml，错误走 stderr。']
+        ],
+        title: 'task start-debug 调用链',
+        code: `<span class="token-cmd">$ dip task start-debug --code 1278123600326688</span>\n\n<span class="token-comment"># 1. Cobra 解析命令和参数</span>\nvalidate(code, biztime, spaceCode)\n\n<span class="token-comment"># 2. 读取配置与登录态</span>\nctx = loadActiveEnvAndSpace()\nauth = ensureToken()\n\n<span class="token-comment"># 3. 调用开发中心 API</span>\nPOST /tasks/{code}/debug/submit\n\n<span class="token-comment"># 4. 输出下一步动作</span>\n<span class="token-ok">调试作业已提交</span>\ndebug-status / stop-debug / publish`
+      },
+      config: {
+        steps: [
+          ['加载用户配置', '读取 ~/.dip/config.yaml 中的登录态、环境和输出偏好。'],
+          ['解析项目配置', '合并 dip.yaml 中的 space、project、task 默认参数。'],
+          ['应用命令覆盖', 'flags 的优先级最高，用于覆盖环境和项目默认值。'],
+          ['沉淀当前上下文', 'active env / active space 统一供后续命令复用。']
+        ],
+        title: '配置优先级',
+        code: `<span class="token-cmd">$ dip config use-space --code SPACE_A</span>\n\nflags > project dip.yaml > user config > builtin defaults\n\nactiveEnv = prod\nactiveSpace = SPACE_A\noutput = table`
+      },
+      client: {
+        steps: [
+          ['构造请求上下文', '统一注入 baseURL、token、spaceCode 与 trace 信息。'],
+          ['封装业务接口', '按 task、kafka、config 等领域组织 API Client 方法。'],
+          ['处理平台响应', '把 HTTP 状态、业务码和错误信息转换为 CLI 语义。'],
+          ['返回领域模型', '命令层只消费稳定结构，不感知接口细节。']
+        ],
+        title: 'Client 边界',
+        code: `<span class="token-comment"># command layer</span>\nresult, err := client.Task.StartDebug(ctx, request)\n\n<span class="token-comment"># api client</span>\nPOST /api/v1/tasks/debug/submit\nAuthorization: Bearer ${'${token}'}`
+      },
+      output: {
+        steps: [
+          ['区分人机输出', '默认 table 便于终端阅读，json/yaml 面向脚本和 Agent。'],
+          ['规范错误通道', '正常结果写 stdout，错误和诊断信息写 stderr。'],
+          ['支持字段裁剪', '通过 --fields 控制展示列，减少脚本解析成本。'],
+          ['稳定退出码', '成功、参数错误、平台错误使用可预期退出码。']
+        ],
+        title: '输出协议',
+        code: `<span class="token-cmd">$ dip task list -o json --fields code,name,status</span>\n\n[\n  { "code": "1278123600326688", "name": "ods_order", "status": "RUNNING" }\n]\n\nstderr: validation / api errors\nstdout: command result`
+      }
+    };
+
+    document.querySelectorAll('#develop .tab-trigger').forEach((trigger) => {
+      const activate = () => {
+        const tab = developTabs[trigger.dataset.tab];
+        if (!tab) return;
+        document.querySelectorAll('#develop .tab-trigger').forEach((item) => {
+          const selected = item === trigger;
+          item.classList.toggle('active', selected);
+          item.setAttribute('aria-selected', String(selected));
+        });
+        document.querySelector('#develop-tab-content').innerHTML = `
+          <div class="timeline">${tab.steps.map((step, index) => `
+            <div class="timeline-item">
+              <div class="timeline-index">${index + 1}</div>
+              <div class="timeline-body"><strong>${step[0]}</strong><span>${step[1]}</span></div>
+            </div>`).join('')}</div>
+          <div class="code-panel">
+            <header><span>${tab.title}</span><span class="kbd">example</span></header>
+            <pre><code>${tab.code}</code></pre>
+          </div>`;
+      };
+      trigger.addEventListener('click', activate);
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
